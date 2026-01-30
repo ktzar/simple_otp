@@ -6,22 +6,27 @@
     <title>UW 2FA Generator</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/otpauth/9.1.2/otpauth.umd.min.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css" />
-    <style>main{text-align: center}</style>
+    <style>
+        main{text-align: center}
+        progress.expiring::-moz-progress-bar { background: #aa0000; }
+        progress.expiring::-webkit-progress-value { background: #aa0000; }
+        progress.expiring { color: #aa0000; }
+    </style>
 </head>
 <body>
 
 <main class="container">
     <h2>UW 2FA Generator</h2>
-    <div class="grid">
-        <div><input type="text" id="label" placeholder="Account Name (e.g. Github)"></div>
-        <div><input type="password" id="secret" placeholder="Secret Key (Base32)"></div>
-    </div>
-    <button onclick="saveSecret()">Save Secret</button>
+    <form>
+        <fieldset role="group">
+        <input type="password" id="secret" placeholder="Secret Key (Base32)">
+        <button onclick="saveSecret()" style="width: 25%">Save Secret</button>
+        </fieldset>
 
     <hr/>
 
     <article id="display-area" style="display:none;">
-        <h4 id="account-label"></h4>
+        <h4 id="account-label">Your code</h4>
         <article><h5 class="grid" id="token">000 000</h5></article>
         <div class="timer"><progress min="0" max="30" id="progress" class="progress"/></div>
     </article>
@@ -29,26 +34,23 @@
 
 <script>
     let totp = null;
+    const authLabel = "Some auth";
     const $ = (id ) => document.getElementById(id);
 
     // Load from localStorage on startup
     window.onload = () => {
         const savedSecret = localStorage.getItem('2fa_secret');
-        const savedLabel = localStorage.getItem('2fa_label');
         if (savedSecret) {
             $('secret').value = savedSecret;
-            $('label').value = savedLabel;
-            initTOTP(savedSecret, savedLabel);
+            initTOTP(savedSecret, authLabel);
         }
     };
 
     function saveSecret() {
         const secret = $('secret').value.replace(/\s+/g, '').toUpperCase();
-        const label = $('label').value;
         
         localStorage.setItem('2fa_secret', secret);
-        localStorage.setItem('2fa_label', label);
-        initTOTP(secret, label);
+        initTOTP(secret, authLabel);
     }
 
     function initTOTP(secret, label) {
@@ -73,10 +75,14 @@
         
         const token = totp.generate();
         $('token').innerText = token.slice(0,3) + ' ' + token.slice(3);
-        $('account-label').innerText = localStorage.getItem('2fa_label');
         
         const seconds = Date.now() / 1000 % 30;
         $('progress').value = 30-seconds;
+        if (seconds > 25) {
+            $('progress').classList.add('expiring');
+        } else {
+            $('progress').classList.remove('expiring');
+        }
     }
 
     // Refresh every 100ms
