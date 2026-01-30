@@ -8,9 +8,9 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css" />
     <style>
         main{text-align: center}
-        progress.expiring::-moz-progress-bar { background: #aa0000; }
-        progress.expiring::-webkit-progress-value { background: #aa0000; }
-        progress.expiring { color: #aa0000; }
+        progress.expiring::-moz-progress-bar { background: #ee0000; }
+        progress.expiring::-webkit-progress-value { background: #ee0000; }
+        progress.expiring { color: #ee0000; }
         #token { cursor: pointer}
         #toast { text-style: italic}
     </style>
@@ -37,19 +37,19 @@
 <script>
     let totp = null;
     const authLabel = "Some auth";
-    const $ = (id ) => document.getElementById(id);
+    const getId = (id ) => document.getElementById(id);
 
     function copyToClipboard() {
-        const tk = $("token").innerHTML.trim()
-        navigator.clipboard.writeText(tk);
+        const token = totp.generate();
+        navigator.clipboard.writeText(token);
         showToast("Token copied to the clipboard");
     }
 
     function showToast(text) {
-        $("toast").style.display = "block";
-        $("toast").innerText = text;
+        getId("toast").style.display = "block";
+        getId("toast").innerText = text;
         setTimeout(() => {
-            $("toast").style.display = "none";
+            getId("toast").style.display = "none";
         }, 2500);
     }
 
@@ -57,13 +57,13 @@
     window.onload = () => {
         const savedSecret = localStorage.getItem('2fa_secret');
         if (savedSecret) {
-            $('secret').value = savedSecret;
+            getId('secret').value = savedSecret;
             initTOTP(savedSecret, authLabel);
         }
     };
 
     function saveSecret() {
-        const secret = $('secret').value.replace(/\s+/g, '').toUpperCase();
+        const secret = getId('secret').value.replace(/\s+/g, '').toUpperCase();
         
         localStorage.setItem('2fa_secret', secret);
         initTOTP(secret, authLabel);
@@ -79,7 +79,7 @@
                 period: 30,
                 secret: secret
             });
-            $('display-area').style.display = 'block';
+            getId('display-area').style.display = 'block';
             updateToken();
         } catch (e) {
             alert("Invalid Secret Key format (Base32 required)");
@@ -90,14 +90,14 @@
         if (!totp) return;
         
         const token = totp.generate();
-        $('token').innerText = token.slice(0,3) + ' ' + token.slice(3);
+        getId('token').innerText = token.slice(0,3) + ' ' + token.slice(3);
         
         const seconds = Date.now() / 1000 % 30;
-        $('progress').value = 30-seconds;
+        getId('progress').value = 30-seconds;
         if (seconds > 25) {
-            $('progress').classList.add('expiring');
+            getId('progress').classList.add('expiring');
         } else {
-            $('progress').classList.remove('expiring');
+            getId('progress').classList.remove('expiring');
         }
     }
 
