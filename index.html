@@ -6,22 +6,25 @@
     <title>UW 2FA Generator</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/otpauth/9.1.2/otpauth.umd.min.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css" />
-    <style>#display-area{text-align: center}</style>
+    <style>main{text-align: center}</style>
 </head>
 <body>
 
 <main class="container">
     <h2>UW 2FA Generator</h2>
-    <input type="text" id="label" placeholder="Account Name (e.g. Github)">
-    <input type="password" id="secret" placeholder="Secret Key (Base32)">
-    <button onclick="saveSecret()">Save &amp; Generate</button>
+    <div class="grid">
+        <div><input type="text" id="label" placeholder="Account Name (e.g. Github)"></div>
+        <div><input type="password" id="secret" placeholder="Secret Key (Base32)"></div>
+    </div>
+    <button onclick="saveSecret()">Save Secret</button>
 
-    <div id="display-area" style="display:none;">
-        <hr/>
+    <hr/>
+
+    <article id="display-area" style="display:none;">
         <h4 id="account-label"></h4>
         <article><h5 class="grid" id="token">000 000</h5></article>
         <div class="timer"><progress min="0" max="30" id="progress" class="progress"/></div>
-    </div>
+    </article>
 </main>
 
 <script>
