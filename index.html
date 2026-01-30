@@ -53,23 +53,37 @@
         }, 2500);
     }
 
-    // Load from localStorage on startup
-    window.onload = () => {
-        const savedSecret = localStorage.getItem('2fa_secret');
+    function localStorageItemName() {
+        if (document.location.hash.length > 1) {
+            return '2fa_secret_' + document.location.hash;
+        }
+        return '2fa_secret';
+    }
+
+    function initApp() {
+        const savedSecret = localStorage.getItem(localStorageItemName());
         if (savedSecret) {
             getId('secret').value = savedSecret;
             initTOTP(savedSecret, authLabel);
         }
+    }
+
+    // Load from localStorage on startup
+    window.onload = () => {
+        window.addEventListener("hashchange", () => {
+            document.location.reload();
+        });
+        initApp();
     };
 
     function saveSecret() {
         const secret = getId('secret').value.replace(/\s+/g, '').toUpperCase();
-        
-        localStorage.setItem('2fa_secret', secret);
+        localStorage.setItem(localStorageItemName(), secret);
         initTOTP(secret, authLabel);
     }
 
     function initTOTP(secret, label) {
+        console.log("Initialising TOTP");
         try {
             totp = new OTPAuth.TOTP({
                 issuer: 'Some org',
@@ -88,7 +102,6 @@
 
     function updateToken() {
         if (!totp) return;
-        
         const token = totp.generate();
         getId('token').innerText = token.slice(0,3) + ' ' + token.slice(3);
         
@@ -98,6 +111,10 @@
             getId('progress').classList.add('expiring');
         } else {
             getId('progress').classList.remove('expiring');
+        }
+
+        if (document.location.hash.length > 1) {
+            getId("account-label").innerText = "Your code for " + document.location.hash;
         }
     }
 
